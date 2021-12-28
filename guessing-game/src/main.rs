@@ -8,26 +8,32 @@ fn main() {
 
     let secret_number = rand::thread_rng().gen_range(1..100);
 
-    println!("Please enter your guess.");
+    loop {
+        println!("Please enter your guess.");
 
-    let mut guess = String::new();
+        let mut guess = String::new();
 
-    io::stdin()
-        .read_line(&mut guess)
-        .expect("Cannot read line");
+        io::stdin()
+            .read_line(&mut guess)
+            .expect("Cannot read line");
 
 
-    let guess: u32 = guess.trim().parse().expect("Type a number!");
+        let guess: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
 
-    print!("You Guessed: {}", guess);
-
-    // for {
+        println!("You Guessed: {}", guess);
+        
         match guess.cmp(&secret_number) {
             Ordering::Less => println!("Too small!"),
             Ordering::Greater => println!("Too big"),
-            Ordering::Equal => println!("You win"),
+            Ordering::Equal => {
+                println!("You win");
+                break;
+            }
         }
-    // }
+    }
 
 
 }
