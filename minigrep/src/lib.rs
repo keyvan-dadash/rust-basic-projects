@@ -2,8 +2,9 @@ use std::fs;
 use std::error::Error;
 
 pub struct Config {
-    filename: String,
-    query: String
+    pub filename: String,
+    pub query: String,
+    pub is_case_sensitive: bool,
 }
 
 impl Config {
@@ -14,12 +15,23 @@ impl Config {
             return Err("we need at least 3 argument!");
         }
 
+        let mut is_case_sensitive = true;
+
+        if args.len() == 4 {
+            let case_sensitive = args[3].clone();
+
+            if case_sensitive.eq("case") {
+                is_case_sensitive = false;
+            }
+        }
+
         let query = args[1].clone();
         let filename = args[2].clone();
 
         return Ok(Config {
             filename: filename,
-            query: query
+            query: query,
+            is_case_sensitive: is_case_sensitive,
         });
     }
 }
@@ -31,7 +43,20 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let content = fs::read_to_string(config.filename)?;
 
-    for line in search(&config.query, &content) {
+    type FuncType<'a> = fn(
+        query: &str, 
+        content: &'a str,
+    ) -> Vec<&'a str>;
+
+    let func: FuncType;
+
+    if config.is_case_sensitive {
+        func = search;
+    } else {
+        func = search_case_insensitive;
+    }
+
+    for line in func(&config.query, &content) {
         println!("{}", line);
     }
 
