@@ -1,6 +1,6 @@
 use std::env;
 use std::fs;
-
+use std::process;
 
 struct Config {
     filename: String,
@@ -9,14 +9,19 @@ struct Config {
 
 impl Config {
 
-    fn new(args: &[String]) -> Config {
+    fn new(args: &[String]) -> Result<Config, &str> {
+
+        if args.len() < 3 {
+            return Err("we need at least 3 argument!");
+        }
+
         let query = args[1].clone();
         let filename = args[2].clone();
 
-        return Config {
+        return Ok(Config {
             filename: filename,
             query: query
-        };
+        });
     }
 }
 
@@ -24,7 +29,10 @@ fn main() {
 
     let args: Vec<String> = env::args().collect();
 
-    let config = Config::new(&args);
+    let config = Config::new(&args).unwrap_or_else(|err| {
+        println!("we have some problem with configs: {}", err);
+        process::exit(1);
+    });
 
 
     println!("query {}", config.query);
